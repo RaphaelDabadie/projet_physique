@@ -9,7 +9,7 @@ def cycle(X_t, D_t, P_t, W_t, N_t, H_k, k, r, t): # donne l'étape t+1 à partir
     for j in range (1, t-k+1):
         EU = EU + log( (1-X_t)*W_h*(1+r) + X_t*W_h*(1+H_k[j]))
     EU=EU/k # Fonction d'utilité espérée
-    X_h = 0 # Maximisation de la fonction EU - à faire
+    X_h = 60 # Maximisation de la fonction EU - à faire
     N_h= (X_h*W_h)/P_h # Définition de la courbe de demande
     P_t_future= (X_h*W_h)*10000 # Prix à t+1
     D_t_new=D_t + 0.05*D_t # Dividende à t+1
@@ -24,11 +24,11 @@ W_0=1000
 P_0=4.00
 N_0=100
 D_0=0.20
-H_k=[1,23,43,54]
+H_k=[1,23,43,54] # des valeurs arbitraires et pas données dans l'article
 k=15
 r=0.04
-t=12
-print(cycle(X_0, D_0, P_0, W_0, N_0, H_k, k, r, 2))
+t=12 # idem
+print(cycle(X_0, D_0, P_0, W_0, N_0, H_k, k, r, t))
 
 """
 # definition des fonctions
