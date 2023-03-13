@@ -1,15 +1,20 @@
 # definition des fonctions
 from math import log
+from scipy.optimize import minimize
 
-def cycle(X_t, D_t, P_t, W_t, N_t, H_k, k, r, t): # donne l'étape t+1 à partir de l'étape t pour l'investisseur i
+def eu(x, W_h, r, H_j, t,k): # fonction d'utilité à maximiser
+    sum = 0
+    for j in range(t,t-k+2):
+        sum += math.log((1-x)*W_h*(1 + r) + x*W_h*(1 + H_j))
+    a_minimiser= (-sum)/k
+    return a_minimiser
+
+def cycle(X_0, D_t, P_t, W_t, N_t, H_k, k, r, t): # donne l'étape t+1 à partir de l'étape t pour l'investisseur i
     W_t_new= W_t + N_t*D_t + (W_t - N_t*P_t)*r # Retour sur investissement avant échange
     P_h = 12 # Prix attendu - à compléter
     W_h = W_t_new + N_t*D_t + (W_t_new - N_t*P_t)*r + N_t*(P_h - P_t) # Richesse attendue
-    EU=0
-    for j in range (1, t-k+1):
-        EU = EU + log( (1-X_t)*W_h*(1+r) + X_t*W_h*(1+H_k[j]))
-    EU=EU/k # Fonction d'utilité espérée
-    X_h = 60 # Maximisation de la fonction EU - à faire
+    EU=eu(X_0, W_h, r, H_j, t, k) # Fonction d'utilité à maximiser
+    X_h = float(minimize(eu, X_0, bounds=bounds, args =(W_h, r, H_j,t, k)).x) # argmax de la fonction
     N_h= (X_h*W_h)/P_h # Définition de la courbe de demande
     P_t_future= (X_h*W_h)*10000 # Prix à t+1
     D_t_new=D_t + 0.05*D_t # Dividende à t+1
@@ -29,41 +34,3 @@ k=15
 r=0.04
 t=12 # idem
 print(cycle(X_0, D_0, P_0, W_0, N_0, H_k, k, r, t))
-
-"""
-# definition des fonctions
-
-def dividende(T): # calcule les T premières valeurs des dividendes (Dt)
-    D0=0.20
-    for i in range(T):
-        D.append(D0(1+0.05)**i)
-    return D
-
-
-def portemonnaie(T, P): # Calcule Wt
-    W=[1000]
-    D=dividende(T)
-    for i in range(T):
-        W.append(W[i]+D[i]*10+(W[i]-10*P[i])*0.04+10(P-P[i]))
-    return W
-
-def N(T,p): # Calcule Nt
-    N=[50]
-    for i in range(T):
-        N.append(X[i]*W[i]/p)
-    return N
-
-def fonction(T,p): # reprend les fonctions créées précédemment
-    W=[1000]
-    N=[50]
-    P=[4.00]
-    X=[]
-    D=[0.2]
-    t=0
-    while t < T:
-        D.append(D0(1+0.05)**t)
-        W.append(W[t]+D[t]*10+(W[t]-10*P[t])*0.04+10(P-P[t]))
-        N.append(W[t]+D[t]*10+(W[t]-10*P[t])*0.04+10(P-P[t])*argmax(...)/p)
-        X.append(argmax(...))
-        t+=1
-"""
