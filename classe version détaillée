@@ -1,0 +1,76 @@
+import numpy as np
+from scipy.optimize import minimize_scalar
+
+class StockMarketSimulation:
+    def __init__(self, num_investors, k, initial_stock_price, initial_dividend, bond_return):
+        self.num_investors = num_investors #nombre d'investisseurs 
+        self.k = k #taille de l'historique 
+        self.stock_history = np.zeros(k) #array fait de 0
+        self.stock_price = initial_stock_price #Correspond à P(t)
+        self.dividend = initial_dividend #Correspond à D(t)
+        self.r = r 
+        self.investors_wealth = np.ones(num_investors) #A revoir 
+        self.investors_shares = np.zeros(num_investors) #A revoir 
+        
+        
+    def calculate_stock_return(self): #calcul de H(t)
+        stock_return = (self.stock_price - self.stock_history[-1] + self.dividend) / self.stock_history[-1]
+        return stock_return
+    
+    def update_stock_history(self, stock_return): #cf passage history update H(t+1)
+        self.stock_history[:-1] = self.stock_history[1:] #on enlève à stock history la valeur la plus ancienne
+        self.stock_history[-1] = stock_return #la dernière valeur correspond désormais à stock_return de la periode t+1
+        
+    def find_optimal_investment_proportion(self, investor_wealth, investor_stock_history, price):
+        #renvoie la valeur de X(i)
+        #investor_wealth & investor_stock_history correspondent aux paramètres wealth et stock history de l'investisseur choisi i 
+        def expected_utility(investment_proportion):
+            return -self.calculate_expected_utility(investor_wealth, investor_stock_history, investment_proportion) # on renvoie -EU pour ensuite pouvoir minimiser la fonction (on minimise -f au lieu de maximiser f)
+        res = minimize_scalar(expected_utility, bounds=(0, 1), method='bounded') #on spécifie que X doit être compris entre 0 et 1
+        return res.x
+        
+    def calculate_expected_utility(self, wealth, stock_history, investment_proportion):
+        #calcul de EU dans le cas général
+        return np.mean([np.log((1 - investment_proportion) * wealth * (1 + self.r) + 
+                               investment_proportion * wealth * (1 + stock_history[i])) for i in range(self.k)])
+    
+    def calculate_investor_wealth(self, self.dividend, number_shares, wealth_in_t, self.r, price_h,self.stock_price): #calcul de Wh
+        return wealth_in_t+(number_shares*self.dividend)+(wealth_in_t-number_shares*self.stock_price)*self.r+number_shares(price_h-self.stock_price)
+    
+    def calculate_demand(self, investor_wealth, investor_stock_history, price):
+        #investor_wealth se calcule avec la fonction précédente
+        investment_proportion = self.find_optimal_investment_proportion(investor_wealth, investor_stock_history, price)
+        demand = (investment_proportion * investor_wealth) / price #expression (5) du papier
+        return demand
+        
+    def calculate_equilibrium_price(self): #calcul de Ph* qui est en fait P(t+1)
+        total_demand = sum([self.calculate_demand(self.investors_wealth[i], self.investors_shares[i], self.stock_price) 
+                            for i in range(self.num_investors)])
+        equilibrium_price = total_demand / 1  # assuming fixed number of shares
+        return equilibrium_price
+    
+    def update_investors(self): #on met à jour les données des investisseurs lors du passage en t+1
+        for i in range(self.num_investors):
+            demand = self.calculate_demand(self.investors_wealth[i], self.investors_shares[i], self.stock_price) #Nh
+            cost = self.stock_price * demand #Ph * Nh
+            self.investors_wealth[i] -= cost 
+            self.investors_shares[i] += demand
+    def update_investors(self):
+    """
+    Update the investors' data for the next time step based on the current stock price.
+    """
+    for i in range(self.num_investors):#on le fait pour chaque investisseur
+        investor_wealth = self.investors_wealth[i]
+        investor_stock_history = self.investors_shares[i]
+        demand = self.calculate_demand(investor_wealth, investor_stock_history, self.stock_price) #Nh
+        cost = self.stock_price * demand #Ph * Nh
+        self.investors_wealth[i] -= cost 
+        self.investors_shares[i] += demand
+
+    def run_simulation(self, num_steps):
+        for step in range(num_steps):
+            stock_return = self.calculate_stock_return()
+            self.update_stock_history(stock_return)
+            self.update_investors()
+            self.stock_price = self.calculate_equilibrium_price()
+
